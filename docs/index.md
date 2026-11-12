@@ -48,9 +48,9 @@ features:
   - title: 设计模式
     link: /design/index.md
     details: 学习常用模式与代码设计
-  - title: 数据结构与算法
-    link: /algorithm/index.md
-    details: 掌握常用结构与算法思维
+  # - title: 数据结构与算法
+  #   link: /algorithm/index.md
+  #   details: 掌握常用结构与算法思维
   - title: 'Vue'
     details: '学习组合式开发与组件实践'
     link: /vue3/index.md
@@ -81,6 +81,9 @@ features:
   - title: 'Python语法通关'
     details: '掌握基础语法与编程实践'
     link: /python/index.md
+  - title: 'MySQL'
+    details: '数据库基础知识学习'
+    link: /sql/index1.md
   - title: 'Agent通关秘籍'
     details: '学习智能体开发与工具调用'
     link: /agent/index.md

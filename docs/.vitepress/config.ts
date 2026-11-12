@@ -3,14 +3,35 @@
  * @Description: 
  * @Date: 2026-10-30 15:52:25
  * @LastEditors: along
- * @LastEditTime: 2026-10-30 17:11:07
- * @FilePath: /TextNook-main/docs/.vitepress/config.ts
+ * @LastEditTime: 2026-11-12 16:06:19
+ * @FilePath: /DevNook/docs/.vitepress/config.ts
  */
+import { statSync } from 'node:fs'
+import { resolve } from 'node:path'
 import type { DefaultTheme, UserConfig } from 'vitepress'
 
 export default {
   title: '大前端笔记',
+  lastUpdated: true,
+  transformPageData(pageData, { siteConfig }) {
+    if (pageData.frontmatter.lastUpdated !== false && !pageData.lastUpdated) {
+      // 尚无 Git 提交记录的文档使用文件修改时间。
+      pageData.lastUpdated = statSync(
+        resolve(siteConfig.srcDir, pageData.filePath),
+      ).mtimeMs;
+    }
+  },
   themeConfig: {
+    outline: {
+      level: [1, 4],
+    },
+    lastUpdated: {
+      text: '最后更新于',
+      formatOptions: {
+        dateStyle: 'short',
+        timeStyle: 'medium',
+      },
+    },
     nav: [{ text: '小记', link: '/record/index.md' }],
     sidebar: {
       '/record/': [
@@ -25,7 +46,7 @@ export default {
           // collapsed: false,
           items: [
             { text: '如何使用 Referrer', link: '/web/html/index.md' },
-            { text: 'index2', link: '/web/html/index2.md' },
+            { text: 'rel关键字', link: '/web/html/index2.md' },
           ],
         },
       ],
@@ -466,7 +487,36 @@ export default {
       '/python/': [
         {
           text: 'Python语法通关',
-          items: [{ text: 'Python语法通关', link: '/python/index.md' }],
+          items: [
+            { text: 'Python初始', link: '/python/index.md' },
+            { text: '数据的存储与运算', link: '/python/index2.md' },
+            { text: '数据的逻辑处理', link: '/python/index3.md' },
+            { text: '数据存储容器', link: '/python/index4.md' },
+            { text: '列表推导式', link: '/python/index5.md' },
+            { text: '函数与作用域', link: '/python/index6.md' },
+            { text: '面向对象基础', link: '/python/index7.md' },
+            { text: '模块', link: '/python/index8.md' },
+            { text: '枚举', link: '/python/index9.md' },
+            { text: '闭包', link: '/python/index10.md' },
+            { text: '装饰器', link: '/python/index11.md' },
+            { text: '异常处理', link: '/python/index12.md' },
+            { text: 'async与await', link: '/python/index13.md' },
+            { text: 'pyproject.toml + uv', link: '/python/index14.md' },
+            { text: '日志logging', link: '/python/index15.md' },
+            { text: '打包发布PyPI', link: '/python/index16.md' },
+          ],
+        },
+      ],
+      '/sql/': [
+        {
+          text: 'MySQL',
+          items: [
+            { text: 'MySQL常用命令', link: '/sql/index1.md' },
+            { text: '可视化工具Navicat', link: '/sql/index2.md' },
+            { text: 'SQL基础语法', link: '/sql/index3.md' },
+            { text: 'MySQL的数据类型', link: '/sql/index4.md' },
+            { text: '运算符', link: '/sql/index5.md' },
+          ],
         },
       ],
       '/agent/': [
