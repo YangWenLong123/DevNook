@@ -1,0 +1,13 @@
+/* 预览层需要覆盖导航栏和移动端侧边栏。 */
+.medium-zoom-overlay {
+  z-index: 100;
+}
+
+.medium-zoom-image--opened {
+  z-index: 101;
+}
+
+.vp-doc .medium-zoom-image:focus-visible {
+  outline: 2px solid var(--vp-c-brand-1);
+  outline-offset: 4px;
+}

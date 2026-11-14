@@ -3,7 +3,7 @@
  * @Description: 
  * @Date: 2026-10-30 15:52:25
  * @LastEditors: along
- * @LastEditTime: 2026-11-12 16:06:19
+ * @LastEditTime: 2026-11-14 13:03:53
  * @FilePath: /DevNook/docs/.vitepress/config.ts
  */
 import { statSync } from 'node:fs'
@@ -516,6 +516,10 @@ export default {
             { text: 'SQL基础语法', link: '/sql/index3.md' },
             { text: 'MySQL的数据类型', link: '/sql/index4.md' },
             { text: '运算符', link: '/sql/index5.md' },
+            { text: '表的关系', link: '/sql/index6.md' },
+            { text: '函数', link: '/sql/index7.md' },
+            { text: '关联查询', link: '/sql/index8.md' },
+            { text: '关联查询', link: '/sql/index8.md' },
           ],
         },
       ],
