@@ -133,9 +133,7 @@ ORDER BY e.id;
 - 部门子查询通过 `e.department_id` 引用当前员工，属于**关联子查询**。部门 ID 是主键，因此最多匹配一行。
 - 平均工资子查询不引用外层员工，属于**非关联子查询**，各行显示相同的公司平均工资。
 
-例如张三对应“技术部 / 12000 / 8555.56”，钱一对应“NULL / 6000 / 8555.56”。
-
-这里的子查询用作一个字段值，称为**标量子查询**：必须返回一列、至多一行。返回零行时值为 `NULL`；返回多行时 MySQL 会报错。不要在可能匹配多行时直接使用 `=` 或把它当作单个字段值。
+![alt text](image-109.png)
 
 ## where或having中嵌套子查询
 
@@ -150,8 +148,7 @@ WHERE salary > (SELECT AVG(salary) FROM db_sq_employee)
 ORDER BY id;
 ```
 
-
-结果按 ID 排序：张三 12000、李四 9000、赵六 11000、吴九 10000。比较时使用未四舍五入的平均工资；`ROUND` 只用于显示。
+![alt text](image-110.png)
 
 ### 案例 3：WHERE + IN 多行子查询
 
@@ -193,6 +190,8 @@ ORDER BY e.id;
 
 钱一的部门 ID 为 `NULL`，普通等号无法将 `NULL` 匹配为一个部门；其子查询平均值为 `NULL`，`salary > NULL` 不是 TRUE，因此不会入选。
 
+![alt text](image-111.png)
+
 ### 案例 5：HAVING + 子查询
 
 查询平均工资高于公司平均工资的部门。
@@ -206,12 +205,9 @@ HAVING AVG(salary) > (SELECT AVG(salary) FROM db_sq_employee)
 ORDER BY department_id;
 ```
 
-
-| department_id | avg_salary |
-| --- | --- |
-| 10 | 9666.67 |
-
 `WHERE` 先排除没有部门的员工，`GROUP BY` 再按部门分组，`HAVING` 最后筛选分组结果。公司平均值仍包含全部 9 名员工。
+
+![alt text](image-112.png)
 
 ## exists型子查询
 
@@ -231,7 +227,7 @@ ORDER BY d.id;
 ```
 
 
-结果：技术部、产品部、财务部。即使一个部门有多名员工，外层也只返回该部门一行。
+![alt text](image-113.png)
 
 ### 案例 7：NOT EXISTS 查询没有员工的部门
 
@@ -247,7 +243,7 @@ ORDER BY d.id;
 ```
 
 
-结果：运营部（ID 40）。
+![alt text](image-114.png)
 
 注意：如果改写成下面这样，本例会得不到任何部门，因为员工表的 `department_id` 包含 `NULL`。
 
@@ -477,16 +473,3 @@ ORDER BY level_no, id;
 
 递归分为两部分：前半段找起点张三，后半段根据上一轮结果继续找下属，`UNION ALL` 合并各轮结果；没有新下属时停止。本例的领导关系没有环，实际层级数据也需要避免循环引用，否则可能触发递归深度限制。
 
-## 完整练习脚本
-
-项目中的完整脚本位于 `docs/sql/examples/subqueries.sql`，包含建库、建表、插入数据和以上 15 个案例。具备建库权限的本地 MySQL 用户可以从项目根目录执行：
-
-```bash
-mysql --default-character-set=utf8mb4 -u root -p < docs/sql/examples/subqueries.sql
-```
-
-也可以将下面展开后的 SQL 一次复制到数据库客户端执行。更新、删除使用同一连接中的事务回滚；复制表案例会保留新建的三张副本表。
-
-::: details 查看完整可执行 SQL
-<<< ./examples/subqueries.sql{sql}
-:::

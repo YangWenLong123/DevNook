@@ -1,0 +1,71 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="800" height="790" viewBox="0 0 800 790" role="img" aria-labelledby="title desc">
+  <title id="title">约束案例：部门、员工和员工技能关系图</title>
+  <desc id="desc">部门通过主键 id 与员工的 department_id 建立一对多关系。员工通过主键 id 与员工技能的 employee_id 建立一对多关系。员工技能以员工 ID 和技能编码作为联合主键。</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="8" markerHeight="8" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#2563eb"/>
+    </marker>
+  </defs>
+  <rect width="800" height="790" rx="20" fill="#f1f5f9"/>
+  <g font-family="system-ui, -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif" fill="#0f172a">
+    <text x="30" y="45" font-size="26" font-weight="700">约束如何保护数据</text>
+    <text x="30" y="77" font-size="15" fill="#475569">三张表：先有部门，再有员工，再为员工登记技能。</text>
+
+    <rect x="30" y="115" width="290" height="252" rx="14" fill="#fff" stroke="#cbd5e1"/>
+    <path d="M44 115 H306 Q320 115 320 129 V177 H30 V129 Q30 115 44 115" fill="#dbeafe"/>
+    <text x="48" y="143" font-size="18" font-weight="700">部门 ct_department</text>
+    <text x="48" y="165" font-size="13" fill="#1d4ed8">一条记录代表一个部门</text>
+    <text x="48" y="211" font-size="17" font-weight="600">id</text>
+    <text x="153" y="211" font-size="14" fill="#1d4ed8">PRIMARY KEY</text>
+    <line x1="48" y1="229" x2="302" y2="229" stroke="#e2e8f0"/>
+    <text x="48" y="256" font-size="16">department_name</text>
+    <text x="48" y="283" font-size="14" fill="#64748b">NOT NULL + UNIQUE</text>
+    <text x="48" y="328" font-size="14" fill="#475569">10 技术部 / 20 产品部 / 30 财务部</text>
+
+    <rect x="405" y="115" width="365" height="375" rx="14" fill="#fff" stroke="#cbd5e1"/>
+    <path d="M419 115 H756 Q770 115 770 129 V177 H405 V129 Q405 115 419 115" fill="#dbeafe"/>
+    <text x="423" y="143" font-size="18" font-weight="700">员工 ct_employee</text>
+    <text x="423" y="165" font-size="13" fill="#1d4ed8">一条记录代表一名员工</text>
+    <text x="423" y="207" font-size="16">id</text>
+    <text x="538" y="207" font-size="13" fill="#1d4ed8">PRIMARY KEY + AUTO_INCREMENT</text>
+    <text x="423" y="242" font-size="16">department_id</text>
+    <text x="644" y="242" font-size="14" fill="#1d4ed8">FOREIGN KEY</text>
+    <text x="423" y="277" font-size="16">employee_no</text>
+    <text x="423" y="302" font-size="13" fill="#64748b">与 department_id 组合 UNIQUE</text>
+    <text x="423" y="337" font-size="16">employee_name</text>
+    <text x="644" y="337" font-size="14" fill="#475569">NOT NULL</text>
+    <text x="423" y="372" font-size="16">email</text>
+    <text x="644" y="372" font-size="14" fill="#475569">UNIQUE</text>
+    <text x="423" y="407" font-size="16">age / salary</text>
+    <text x="644" y="407" font-size="14" fill="#475569">CHECK</text>
+    <text x="423" y="442" font-size="16">salary / employment_status</text>
+    <text x="644" y="466" font-size="13" fill="#475569">DEFAULT 0 / 在职</text>
+
+    <path d="M320 242 H403" fill="none" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <text x="338" y="225" font-size="17" fill="#1d4ed8" font-weight="700">1 : N</text>
+    <text x="330" y="278" font-size="12" fill="#475569">关联部门</text>
+
+    <rect x="405" y="565" width="365" height="163" rx="14" fill="#fff" stroke="#cbd5e1"/>
+    <path d="M419 565 H756 Q770 565 770 579 V627 H405 V579 Q405 565 419 565" fill="#dcfce7"/>
+    <text x="423" y="594" font-size="18" font-weight="700">技能 ct_employee_skill</text>
+    <text x="423" y="616" font-size="13" fill="#166534">一名员工可登记多项技能</text>
+    <text x="423" y="657" font-size="16">employee_id + skill_code</text>
+    <text x="423" y="684" font-size="14" fill="#166534">联合主键；employee_id 同时是外键</text>
+    <text x="423" y="710" font-size="14" fill="#475569">skill_level 默认“入门”</text>
+
+    <path d="M587 490 V562" fill="none" stroke="#2563eb" stroke-width="2.5" marker-end="url(#arrow)"/>
+    <text x="603" y="521" font-size="16" fill="#1d4ed8" font-weight="700">1 : N</text>
+    <text x="603" y="545" font-size="13" fill="#475569">删除员工 → 删除其技能记录</text>
+
+    <rect x="30" y="427" width="290" height="267" rx="14" fill="#fff" stroke="#cbd5e1"/>
+    <text x="48" y="461" font-size="18" font-weight="700">读图提示</text>
+    <text x="48" y="498" font-size="15">PRIMARY KEY：唯一标识一行</text>
+    <text x="48" y="533" font-size="15">UNIQUE：指定值或组合不重复</text>
+    <text x="48" y="568" font-size="15">CHECK：字段值满足业务规则</text>
+    <text x="48" y="603" font-size="15">FOREIGN KEY：引用真实存在的行</text>
+    <text x="48" y="645" font-size="14" fill="#475569">员工可以暂时没有部门：</text>
+    <text x="48" y="671" font-size="14" fill="#475569">department_id 允许为 NULL。</text>
+
+    <text x="30" y="765" font-size="14" fill="#475569">1 : N = 一对多。关联方向与外键列已标注，完整定义见建表 SQL。</text>
+  </g>
+</svg>

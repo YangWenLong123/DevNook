@@ -39,9 +39,9 @@ features:
   - title: ES6
     link: /es6/index.md
     details: 掌握现代语法与异步编程
-  - title: Web Apis
-    link: /webapi/index.md
-    details: 掌握浏览器接口与页面交互
+  # - title: Web Apis
+  #   link: /webapi/index.md
+    # details: 掌握浏览器接口与页面交互
   - title: 'Typescript'
     details: '掌握类型系统与类型安全开发'
     link: /ts/index.md
@@ -84,6 +84,9 @@ features:
   - title: 'MySQL'
     details: '数据库基础知识学习'
     link: /sql/index1.md
+  - title: 'FastAPI'
+    details: 'FastAPI 是一个用于构建 API 的现代、快速（高性能）的 Web 框架'
+    link: /fastApi/index.md
   - title: 'Agent通关秘籍'
     details: '学习智能体开发与工具调用'
     link: /agent/index.md
