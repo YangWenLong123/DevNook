@@ -3,7 +3,7 @@
  * @Description: 
  * @Date: 2026-10-30 15:52:25
  * @LastEditors: along
- * @LastEditTime: 2026-11-18 21:02:52
+ * @LastEditTime: 2026-11-19 10:57:17
  * @FilePath: /DevNook/docs/.vitepress/config.ts
  */
 import { statSync } from 'node:fs'
@@ -504,6 +504,7 @@ export default {
             { text: 'pyproject.toml + uv', link: '/python/index14.md' },
             { text: '日志logging', link: '/python/index15.md' },
             { text: '打包发布PyPI', link: '/python/index16.md' },
+            { text: 'HTTP请求与传参实战', link: '/python/index17.md' },
           ],
         },
       ],
@@ -532,11 +533,11 @@ export default {
           text: 'FastApi',
           items: [
             { text: 'FastAPI介绍', link: '/fastApi/index.md' },
-            { text: 'FastAPI环境搭建', link: '/fastApi/index1.md' },
-            { text: 'FastAPI类型提示', link: '/fastApi/index2.md' },
-            { text: 'FastAPI中的启动命令', link: '/fastApi/index3.md' },
+            { text: '环境搭建', link: '/fastApi/index1.md' },
+            { text: '类型提示', link: '/fastApi/index2.md' },
+            { text: '启动命令', link: '/fastApi/index3.md' },
             { text: 'Pydantic数据验证', link: '/fastApi/index4.md' },
-            // { text: '05. 依赖注入', link: '/fastApi/index5.md' },
+            { text: '请求数据', link: '/fastApi/index5.md' },
             // { text: '06. 数据库与CRUD', link: '/fastApi/index6.md' },
             // { text: '07. 用户登录与权限', link: '/fastApi/index7.md' },
             // { text: '08. 项目结构与配置', link: '/fastApi/index8.md' },
