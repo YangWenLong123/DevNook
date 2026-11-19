@@ -1,145 +1,635 @@
-# 02. FastAPI 入门
+FastAPI 的类型提示，是理解这个框架的关键。它既能帮助编辑器检查代码，也能让 FastAPI 自动解析请求参数、校验数据、生成接口文档，并处理响应数据。
 
-本章目标：在本机运行服务，使用浏览器、Swagger UI 与 curl 调用接口，理解请求如何进入路由函数。
 
-## 1. 安装依赖
+首先要理解：类型提示描述预期类型，通常不负责运行时校验。
 
-在第 1 章创建并激活的虚拟环境中执行：
-
-```bash
-python -m pip install "fastapi>=0.115,<1" "uvicorn[standard]>=0.30,<1"
+```Python
+def add(a: int, b: int) -> int:
+    return a + b
 ```
 
-FastAPI 会安装兼容的 Pydantic 与 Starlette。这里使用主版本范围表达教程的 API 约定，实际项目应在验证后锁定精确版本。
-
-也可以安装 `fastapi[standard]` 获取官方常用配套依赖和 `fastapi dev` 命令。本教程统一用 `python -m uvicorn` 启动。
-
-## 2. 创建第一个应用
-
-新建 `main.py`：
-
-```python
-from fastapi import FastAPI
-from pydantic import BaseModel, Field
-
-app = FastAPI(title="任务管理 API", version="0.1.0")
+这里声明：
+- a、`b` 预期是整数。
+- 返回值预期是整数。
+但 Python 通常不会主动检查：
 
 
-class TaskCreate(BaseModel):
-    title: str = Field(min_length=1, max_length=100)
-    completed: bool = False
+```Python
+result = add("hello", "world")
 
-
-@app.get("/")
-def root():
-    return {"message": "Hello, FastAPI!"}
-
-
-@app.get("/tasks/{task_id}")
-def read_task(task_id: int):
-    return {"id": task_id, "title": "学习 FastAPI"}
-
-
-@app.post("/tasks", status_code=201)
-def create_task(task: TaskCreate):
-    return {"id": 1, **task.model_dump()}
+print(result)  # helloworld
 ```
 
-这个示例没有保存数据，每次创建都返回演示编号 1。数据库版会实现真正的持久化与编号生成。
+编辑器、mypy、Pyright 等工具可以报告类型错误，但 Python 仍然可能执行成功。
 
-## 3. 启动服务
 
-在 `main.py` 所在目录运行：
+## 类型提示
 
-```bash
-python -m uvicorn main:app --reload
+我们先看一个简单的例子：
+
+```Python
+def get_full_name(first_name, last_name):
+    return first_name + " " + last_name
 ```
 
-- `main`：模块名，对应 `main.py`，不写 `.py` 后缀。
-- `app`：模块中的 FastAPI 实例变量。
-- `--reload`：代码变化后重新加载，适合本地开发。
-- 默认监听 `127.0.0.1:8000`。按 `Ctrl+C` 停止。
+1. 接下来我们有个需求是把接收参数的首字母变成大写，然后，你试试程序员的老朋友——编辑器的自动补全。
 
-如果提示 `Could not import module "main"`，先检查工作目录、文件名以及文件导入时是否发生异常。端口被占用时可使用 `--port 8001`。
+![alt text](image-6.png)
 
-## 4. 三种调用方式
+但很遗憾，没有什么有用的提示.
 
-### 4.1 浏览器
+2. 那么我们把参数改成这样
 
-访问 `http://127.0.0.1:8000/`，应看到：
-
-```json
-{"message": "Hello, FastAPI!"}
+```Python
+def get_full_name(first_name:str, last_name:str):
+    return first_name + " " + last_name
 ```
 
-直接在地址栏打开 URL 通常发出 GET 请求，不能用它直接演示带 JSON 请求体的 POST。
+我们再试下：
+![alt text](image-7.png)
 
-### 4.2 Swagger UI
+这样，你可以滚动查看选项，直到找到那个“看着眼熟”的方法。
 
-打开 `http://127.0.0.1:8000/docs`：展开 `POST /tasks`，点击 `Try it out`，输入请求体，再点击 `Execute`。
+3. 如果我们再加个字段`age`,可以看到下面编辑器的提示报错
 
-```json
-{"title": "写第一个接口", "completed": false}
+![alt text](image-9.png)
+
+现在你知道需要修复它，用 str(age) 把 age 转成字符串：
+
+```Python
+def get_full_name(first_name:str, last_name:str, age:int):
+    return first_name.upper() + " " + last_name.upper() + str(age)
 ```
 
-预期状态码是 `201`，响应包含 `id`、`title` 和 `completed`。
+## 声明类型
 
-其他默认地址：`/redoc` 展示 ReDoc 文档；`/openapi.json` 返回描述接口的 OpenAPI JSON。它们不是业务数据接口。
+### 基础类型
 
-### 4.3 curl
+| 注解 | 含义 |
+|---|---|
+| `int` | 整数 |
+| `float` | 浮点数 |
+| `bool` | 布尔值 |
+| `str` | 字符串 |
+| `bytes` | 不可变字节序列 |
+| `bytearray` | 可变字节序列 |
+| `complex` | 复数 |
+| `object` | 任意 Python 对象，但使用前通常需要确认具体类型 |
+| `None` | 空值 |
+| `type[User]` | `User` 类本身，或它的子类 |
 
-下面命令适用于 macOS / Linux / Git Bash；Windows PowerShell 初学时可以先使用 Swagger UI，避免命令行引号差异。
+```Python
+name: str = "Alice"
+age: int = 18
+price: float = 19.9
+enabled: bool = True
+number: complex = 1 + 2j
 
-```bash
-curl -i http://127.0.0.1:8000/tasks/1
-
-curl -i -X POST http://127.0.0.1:8000/tasks \
-  -H 'Content-Type: application/json' \
-  -d '{"title":"写第一个接口"}'
+content: bytes = b"hello"
+buffer: bytearray = bytearray(b"hello")
+view: memoryview = memoryview(b"hello")
 ```
 
-`-i` 显示响应头与状态码。省略 `completed` 时使用默认值 `false`。
+函数参数和返回值的写法：
 
-## 5. 故意发送错误请求
+```Python
+def greet(name: str) -> str:
+    return f"Hello, {name}"
 
-```bash
-curl -i http://127.0.0.1:8000/tasks/abc
-
-curl -i -X POST http://127.0.0.1:8000/tasks \
-  -H 'Content-Type: application/json' \
-  -d '{"title":""}'
+def save_message(message: str) -> None:
+    print(message)
 ```
 
-两个请求都应返回 `422`：前者无法把 `abc` 解析为整数，后者违反标题最小长度约束。重点观察响应 `detail` 中的 `loc`，它会指出错误来自 `path` 还是 `body`。
+### 列表、字典、集合和元组，直接使用内置泛型写法。
 
-## 6. 路由顺序与方法
+```Python
+names: list[str] = ["Alice", "Bob"]
 
-固定路径应放在可能匹配它的动态路径之前：
+scores: dict[str, int] = {
+    "Alice": 90,
+    "Bob": 85,
+}
 
-```python
-# 如需加入本章应用，请把这段放在 /tasks/{task_id} 定义之前。
-@app.get("/tasks/stats")
-def task_stats():
-    return {"total": 0}
+tags: set[str] = {"python", "fastapi"}
+
+permissions: frozenset[str] = frozenset({"read", "write"})
 ```
 
-否则 `/tasks/stats` 可能先匹配 `/tasks/{task_id}`，随后因为 `stats` 不是整数而返回 422。同一路径允许注册不同方法；请求方法不匹配时一般返回 405。
 
-`/tasks` 和 `/tasks/` 也应保持约定一致，默认配置可能通过重定向补齐或移除斜杠。
+嵌套结构：
 
-## 7. 请求处理顺序
+```Python
+matrix: list[list[int]] = [
+    [1, 2],
+    [3, 4],
+]
 
-```text
-进入中间件 → 匹配方法与路径 → 解析参数 / 执行依赖
-→ 执行接口函数 → 处理响应模型 → 返回响应 → 离开中间件
+groups: dict[str, list[int]] = {
+    "admins": [1, 2],
+    "members": [3, 4],
+}
 ```
 
-请求输入错误通常在执行接口函数前就被拒绝。接口函数返回的数据不符合响应模型则属于服务端错误，需要修复代码。
+元组需要区分固定长度和任意长度：
 
-## 8. 练习与验收
+```Python
+# 固定两个元素：第一个 int，第二个 str。
+record: tuple[int, str] = (1, "Alice")
 
-新增 `GET /health`，返回 `{"status": "ok"}`；为任务接口增加说明文字和 `tags=["tasks"]`；分别触发一次 201、404、405、422。
+# 任意数量的整数。
+numbers: tuple[int, ...] = (1, 2, 3)
 
-验收时能够说明：404 来自没有匹配资源或路由，405 来自方法不匹配，422 来自请求校验失败。
+# 只有一个整数元素。
+single: tuple[int] = (1,)
 
-参考：[First Steps](https://fastapi.tiangolo.com/tutorial/first-steps/)。下一章：[03. 请求参数与数据校验](./index3.md)。
+# 空元组。
+empty: tuple[()] = ()
+```
+
+
+### 任意类型
+Any 需要从 typing 导入；联合类型的 | 写法适用于 Python 3.10+：
+
+```Python
+from typing import Any
+
+data: Any = {"name": "Alice"}
+user_id: int | str = "user-001"
+```
+
+Any 不限制具体类型；`int | str` 将类型限定为整数或字符串。
+
+
+### Union 和 | 表示一个值可以属于多种类型
+
+Python 3.10+ 推荐使用 |：
+
+```Python
+def normalize(value: int | str) -> str:
+    return str(value)
+```
+
+等价的旧写法：
+
+```Python
+from typing import Union
+
+
+def normalize(value: Union[int, str]) -> str:
+    return str(value)
+```
+
+可以声明多个候选类型：
+
+```Python
+value: int | float | str = 10
+```
+
+
+### None
+
+你可以声明一个值的类型是某种类型（比如 str），但它也可能是 None。
+
+
+```Python
+def say_hi(name: str | None = None):
+    if name is not None:
+        print(f"Hey {name}!")
+    else:
+        print("Hello World")
+```
+
+
+## 标准库模块
+
+### typing
+
+1. 联合类型
+
+```Python
+
+## 不推荐这种写法，了解就行
+from typing import Union
+
+def normalize(value: Union[int, str]) -> str:
+    return str(value)
+
+## 等价于
+
+def normalize(value: int | str) -> str:
+    return str(value)
+```
+
+2. Optional[T] 表示 T | None
+
+```Python
+## 不推荐这种写法，了解就行
+from typing import Optional
+
+name: Optional[str] = None
+
+## 等价于
+
+name: str | None = None
+```
+
+3. Any任意类型
+
+```PYthon
+from typing import Any
+
+
+def some_function(data: Any):
+    print(data)
+```
+
+4. Literal 用于限定允许的具体值
+
+```Python
+from typing import Literal
+
+
+def sort_items(direction: Literal["asc", "desc"] ) -> None:
+    print(direction)
+```
+
+调用sort_items("hello"),类型检查错误：
+
+![alt text](image-10.png)
+
+
+也可以使用整数和布尔字面值：
+
+```Python
+HttpMethod = Literal["GET", "POST", "PUT", "DELETE"]
+
+Level = Literal[1, 2, 3]
+
+Enabled = Literal[True]
+```
+
+5. LiteralString 表示类型检查器能够确认由字符串字面量构成的字符串
+
+```Python
+from typing import LiteralString
+
+
+def execute_statement(statement: LiteralString) -> None:
+    print(statement)
+
+
+execute_statement("SELECT id FROM users")
+```
+
+直接来自用户输入的普通 str，不能自动视为 LiteralString：
+
+```Python
+statement = input("请输入内容：")
+
+# execute_statement(statement)
+# 支持该功能的类型检查器可能报告错误。
+```
+
+6. Annotated 可以在类型上附加元数据。
+
+```Python
+from typing import Annotated
+
+UserName = Annotated[str, "用户名"]
+```
+
+它由两部分组成：
+
+```Python
+Annotated[基础类型, 附加信息]
+```
+
+例如：
+
+```Python
+def greet(name: Annotated[str, "用户显示名称"]) -> str:
+    return f"Hello, {name}"
+```
+
+一般的类型检查器主要把 name 看作 str，框架则可以进一步读取元数据。
+
+FastAPI 中的典型写法：
+
+```Python
+from typing import Annotated
+
+from fastapi import Query
+
+PageSize = Annotated[
+    int,
+    Query(ge=1, le=100),
+]
+```
+
+Annotated 自身不理解 ge=1 的业务含义，也不执行校验；这里的规则由 FastAPI、Pydantic 等组件解释。
+
+也可以附加多项元数据：
+
+```Python
+UserName = Annotated[
+    str,
+    "用户名",
+    "用于界面展示",
+]
+```
+
+7. 类型别名
+
+```Python
+type UserId = int
+type UserMap = dict[int, str]
+type ApiResult = dict[str, int | str | None]
+```
+
+使用：
+
+```Python
+def get_user_name(
+    users: UserMap,
+    user_id: UserId,
+) -> str:
+    return users[user_id]
+```
+
+Python 3.10、3.11 中，可以用 TypeAlias 明确表示别名：
+
+```Python
+from typing import TypeAlias
+
+UserMap: TypeAlias = dict[int, str]
+```
+
+TypeAlias 自 Python 3.12 起被弃用，新代码可使用 type 语句。
+
+
+8. NewType 用于区分底层相同、业务含义不同的类型
+
+例如，用户 ID 和订单 ID 都是整数，但不应该混用：
+
+```Python
+from typing import NewType
+
+UserId = NewType("UserId", int)
+
+OrderId = NewType("OrderId", int)
+
+
+def load_user(user_id: UserId) -> None:
+    print(user_id)
+
+
+user_id = UserId(100)
+order_id = OrderId(200)
+
+load_user(user_id)
+
+# load_user(order_id)  # 类型检查错误。
+# load_user(100)       # 通常也会被类型检查器拒绝。
+```
+
+与类型别名相比：
+
+| 工具 | 静态类型上的含义 |
+|---|---|
+| `type UserId = int` | `UserId` 是 `int` 的另一个名字 |
+| `NewType("UserId", int)` | 创建一个需要明确区分的类型 |
+
+9. TypedDict 用于描述字典中每个字段的名称和类型
+
+```Python
+from typing import TypedDict
+
+
+class UserInfo(TypedDict):
+    id: int
+    name: str
+    active: bool
+
+
+user: UserInfo = {
+    "id": 1,
+    "name": "Alice",
+    "active": True,
+}
+```
+
+与 dict[str, object] 相比，`TypedDict` 能表达更精确的字段结构：
+
+```Python
+def describe_user(user: UserInfo) -> str:
+    return f"{user['id']}: {user['name']}"
+```
+
+默认情况下，声明的字段都是必需的。
+
+`NotRequired` 表示某个键可以不存在；Python 3.11+ 提供：
+
+```Python
+from typing import NotRequired, TypedDict
+
+
+class UserInfo(TypedDict):
+    id: int
+    name: str
+    nickname: NotRequired[str]  # 表示键可以不存在，但存在时值应为字符串。 等价于 str | None
+```
+
+下面两种数据都符合声明：
+
+```Python
+user1: UserInfo = {
+    "id": 1,
+    "name": "Alice",
+}
+
+user2: UserInfo = {
+    "id": 2,
+    "name": "Bob",
+    "nickname": "B",
+}
+```
+
+如果希望整个字典默认允许缺少字段，可以使用 total=False，再用 Required 指定必需字段：
+
+```Python
+from typing import Required, TypedDict
+
+
+class UserPatch(TypedDict, total=False):
+    id: Required[int]
+    name: str
+    active: bool
+```
+
+这里：
+- id 必须提供。
+- name、`active` 可以省略。
+
+TypedDict 对象在运行时仍然是普通字典，通常不会自动检查结构。
+
+10. ReadOnly 可以将 TypedDict 的某些字段标记为只读
+
+Python 3.13+ 提供：
+
+```Python
+from typing import ReadOnly, TypedDict
+
+
+class UserInfo(TypedDict):
+    id: ReadOnly[int]
+    name: str
+
+
+user: UserInfo = {
+    "id": 1,
+    "name": "Alice",
+}
+
+user["name"] = "Bob"
+
+# user["id"] = 2  # 类型检查错误。
+```
+
+ReadOnly 表达静态约束，不会把普通字典转换为运行时不可修改的对象，也不会递归冻结字段内部的数据。
+
+11. NamedTuple 用于创建具有字段名称的元组类型
+
+```Python
+from typing import NamedTuple
+
+
+class Point(NamedTuple):
+    x: float
+    y: float
+
+
+point = Point(1.0, 2.0)
+
+print(point.x)
+print(point.y)
+
+print(point[0])
+print(point[1])
+```
+
+它同时具备：
+- 元组的位置访问能力。
+- 通过字段名访问的能力。
+- 字段类型提示。
+
+12. TypeVar 和 Generic 用于表达“类型之间的关联”
+
+假设需要返回列表中的第一个元素：
+
+```Python
+from collections.abc import Sequence
+from typing import TypeVar
+
+T = TypeVar("T")
+
+
+def first(items: Sequence[T]) -> T:
+    return items[0]
+```
+
+调用：
+
+```Python
+number = first([1, 2, 3])       # 推导为 int。
+name = first(["Alice", "Bob"])  # 推导为 str。
+```
+
+T 表示：输入元素是什么类型，返回值就是什么类型。
+
+泛型类的传统写法：
+
+```Python
+from typing import Generic, TypeVar
+
+T = TypeVar("T")
+
+
+class Box(Generic[T]):
+    def __init__(self, value: T) -> None:
+        self.value = value
+
+    def get(self) -> T:
+        return self.value
+
+
+number_box = Box[int](123)
+text_box = Box[str]("hello")
+```
+
+Python 3.12+ 可以使用更简洁的类型参数语法：
+
+```Python
+from collections.abc import Sequence
+
+
+def first[T](items: Sequence[T]) -> T:
+    return items[0]
+
+
+class Box[T]:
+    def __init__(self, value: T) -> None:
+        self.value = value
+
+    def get(self) -> T:
+        return self.value
+```
+
+泛型别名同样支持类型参数：
+
+```Python
+type Lookup[T] = dict[str, T]
+
+scores: Lookup[int] = {
+    "Alice": 90,
+}
+```
+
+
+### callable.abc
+
+1. Callable 用于声明函数或其他可调用对象。
+
+
+```Python
+from collections.abc import Callable
+
+
+def calculate(
+    a: int,
+    b: int,
+    operation: Callable[[int, int], int],
+) -> int:
+    return operation(a, b)
+
+
+def add(a: int, b: int) -> int:
+    return a + b
+
+
+result = calculate(1, 2, add)
+```
+
+语法是：
+
+```Python
+Callable[[参数类型1, 参数类型2], 返回类型]
+````
+
+常见形式：
+
+```Python
+Callable[[], None]          # 无参数，返回 None。
+Callable[[str], int]       # 接收字符串，返回整数。
+Callable[[int, str], bool] # 接收整数和字符串，返回布尔值。
+Callable[..., str]         # 参数签名不作具体描述，返回字符串。
+```

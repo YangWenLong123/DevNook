@@ -3,7 +3,7 @@
  * @Description: 
  * @Date: 2026-10-30 15:52:25
  * @LastEditors: along
- * @LastEditTime: 2026-11-17 17:40:27
+ * @LastEditTime: 2026-11-18 21:02:52
  * @FilePath: /DevNook/docs/.vitepress/config.ts
  */
 import { statSync } from 'node:fs'
@@ -531,20 +531,20 @@ export default {
         {
           text: 'FastApi',
           items: [
-            { text: 'FastApi基础', link: '/fastApi/index.md' },
-            { text: '01. 前置基础', link: '/fastApi/index1.md' },
-            { text: '02. FastAPI入门', link: '/fastApi/index2.md' },
-            { text: '03. 请求参数与数据校验', link: '/fastApi/index3.md' },
-            { text: '04. 响应与异常处理', link: '/fastApi/index4.md' },
-            { text: '05. 依赖注入', link: '/fastApi/index5.md' },
-            { text: '06. 数据库与CRUD', link: '/fastApi/index6.md' },
-            { text: '07. 用户登录与权限', link: '/fastApi/index7.md' },
-            { text: '08. 项目结构与配置', link: '/fastApi/index8.md' },
-            { text: '09. 异步与常见集成', link: '/fastApi/index9.md' },
-            { text: '10. 接口测试', link: '/fastApi/index10.md' },
-            { text: '11. 部署与运行', link: '/fastApi/index11.md' },
-            { text: '12. 进阶专题', link: '/fastApi/index12.md' },
-            { text: '13. 任务管理API实战', link: '/fastApi/index13.md' },
+            { text: 'FastAPI介绍', link: '/fastApi/index.md' },
+            { text: 'FastAPI环境搭建', link: '/fastApi/index1.md' },
+            { text: 'FastAPI类型提示', link: '/fastApi/index2.md' },
+            { text: 'FastAPI中的启动命令', link: '/fastApi/index3.md' },
+            { text: 'Pydantic数据验证', link: '/fastApi/index4.md' },
+            // { text: '05. 依赖注入', link: '/fastApi/index5.md' },
+            // { text: '06. 数据库与CRUD', link: '/fastApi/index6.md' },
+            // { text: '07. 用户登录与权限', link: '/fastApi/index7.md' },
+            // { text: '08. 项目结构与配置', link: '/fastApi/index8.md' },
+            // { text: '09. 异步与常见集成', link: '/fastApi/index9.md' },
+            // { text: '10. 接口测试', link: '/fastApi/index10.md' },
+            // { text: '11. 部署与运行', link: '/fastApi/index11.md' },
+            // { text: '12. 进阶专题', link: '/fastApi/index12.md' },
+            // { text: '13. 任务管理API实战', link: '/fastApi/index13.md' },
           ],
         },
       ],

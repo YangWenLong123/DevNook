@@ -1,78 +1,125 @@
-# FastAPI 基础与学习指南
+## 介绍
 
-FastAPI 是一个使用 Python 类型注解构建 Web API 的框架。你定义接口路径、输入类型和返回类型，它会协助完成参数解析、数据校验、响应序列化与 OpenAPI 文档生成。
+FastAPI 是一个用于构建 API 的现代、快速（高性能）的 Web 框架，使用 Python 并基于标准的 Python 类型提示。
 
-这套文档面向刚开始学习后端开发的读者，按照「基础 → 接口 → 数据库 → 登录鉴权 → 测试部署」展开。最终目标是独立完成一个有用户系统、任务管理、权限隔离和自动测试的 API。
 
-## 1. 先理解 FastAPI 在做什么
+关键特性：
 
-假设前端需要查询任务列表：
+- 快速：极高性能，可与 NodeJS 和 Go 并肩（归功于 Starlette 和 Pydantic）。最快的 Python 框架之一。
+- 高效编码：功能开发速度提升约 200% ～ 300%。*
+- 更少 bug：人为（开发者）错误减少约 40%。*
+- 直观：极佳的编辑器支持。处处皆可自动补全。更少的调试时间。
+- 易用：为易用和易学而设计。更少的文档阅读时间。
+- 简短：最小化代码重复。一次参数声明即可获得多种功能。更少的 bug。
+- 健壮：生产可用级代码。并带有自动生成的交互式文档。
+- 标准化：基于（并完全兼容）API 的开放标准：OpenAPI（以前称为 Swagger）和 JSON Schema。
 
-```text
-浏览器 / 移动端 / curl
-        ↓ GET /tasks?limit=10
-Uvicorn 接收 HTTP 请求
-        ↓ ASGI
-FastAPI 匹配路由、校验参数、执行依赖
-        ↓
-接口函数读取数据库并返回结果
-        ↓
-FastAPI 校验和序列化响应 → JSON → 客户端
+
+## 依赖
+
+FastAPI 站在巨人的肩膀之上：
+  - [Starlette](https://starlette.dev/) 负责 Web 部分。
+  - [Pydantic](https://pydantic.dev/docs/) 负责数据部分。
+
+
+## FastAPI的核心优势
+
+### 高性能
+
+  - FastAPI 基于异步 I/O，性能接近 Node.js 和 Go。
+  - 使用 Uvicorn（ASGI 服务器），支持高并发请求。
+  - 基于 TechEmpower 等基准测试，给出以下简化数据：
+
+  | 框架 | 图片标注的请求量 | 图片给出的说明 |
+| --- | --- | --- |
+| FastAPI | 约 3000 请求/秒 | 异步、轻量 |
+| Flask | 约 1000 请求/秒 | 同步，受 WSGI 限制 |
+| Django | 约 800 请求/秒 | 同步，ORM 和中间件开销较大 |
+
+### 类型提示提升开发效率
+
+FastAPI 利用 Python 类型注解和 Pydantic 自动解析、校验请求数据，减少手动检查代码。 类型信息也能帮助编辑器提供自动补全和错误提示
+
+```Python
+from fastapi import FastAPI
+from pydantic import BaseModel
+
+app = FastAPI()
+
+
+class Item(BaseModel):
+    name: str
+    price: float
+    is_offer: bool | None = None
+
+
+@app.post("/items/")
+async def create_item(item: Item):
+    return item
 ```
 
-| 组成部分 | 主要职责 |
-| --- | --- |
-| FastAPI | 路由声明、依赖注入、接口输入输出与 OpenAPI 集成 |
-| Starlette | ASGI Web 基础能力，例如请求、响应、中间件和 WebSocket |
-| Pydantic | 根据类型定义校验数据、构造模型和序列化数据 |
-| Uvicorn | 运行 ASGI 应用的服务器 |
-| SQLAlchemy | 操作关系型数据库；需要单独安装 |
+1. Item 定义请求体的数据结构
 
-自动生成文档并不等于自动实现业务。用户能否删除某条任务、数据库何时提交事务，都需要你编写代码。
+继承 BaseModel 后，Pydantic 会按照字段声明解析和校验输入。
 
-## 2. 学习目录
+| 字段 | 类型 | 是否必须提交 | 说明 |
+| --- | --- | --- | --- |
+| `name` | `str` | 是 | 商品名称 |
+| `price` | `float` | 是 | 商品价格 |
+| `is_offer` | `bool \| None` | 否 | 是否优惠，默认 `None` |
 
-| 章节 | 学习内容 | 本章完成后可以做什么 |
-| --- | --- | --- |
-| [01. 前置基础](./index1.md) | 类型注解、异常、HTTP、REST、虚拟环境 | 看懂接口定义与请求 |
-| [02. FastAPI 入门](./index2.md) | 安装、路由、Swagger、请求流程 | 启动并调用第一个接口 |
-| [03. 请求参数与数据校验](./index3.md) | 路径、查询、请求体、表单、上传 | 接收并限制客户端输入 |
-| [04. 响应与异常处理](./index4.md) | 响应模型、状态码、自定义异常 | 返回明确且可预期的结果 |
-| [05. 依赖注入](./index5.md) | Depends、子依赖、yield | 复用公共逻辑和管理资源 |
-| [06. 数据库与 CRUD](./index6.md) | SQLAlchemy 2.x、事务、分页、Alembic | 让任务永久保存 |
-| [07. 用户登录与权限](./index7.md) | 密码哈希、JWT、用户身份、资源归属 | 区分不同用户及其数据 |
-| [08. 项目结构与配置](./index8.md) | APIRouter、Settings、lifespan、CORS | 组织可维护的项目 |
-| [09. 异步与常见集成](./index9.md) | async/await、HTTPX、异步会话、后台任务 | 正确调用外部服务 |
-| [10. 接口测试](./index10.md) | pytest、TestClient、依赖覆盖、测试数据库 | 自动验证正常和异常流程 |
-| [11. 部署与运行](./index11.md) | Uvicorn、Docker、代理、健康检查 | 把应用交付到运行环境 |
-| [12. 进阶专题](./index12.md) | 缓存、限流、实时通信、任务队列、性能 | 按实际需求扩展应用 |
-| [13. 任务管理 API 实战](./index13.md) | 完整项目、操作步骤、验收要求 | 串起前面各章 |
+例如，向 POST /items/ 提交：
 
-## 3. 环境与代码约定
+```json
+{
+  "name": "键盘",
+  "price": 199.9,
+  "is_offer": true
+}
+```
+FastAPI 会把 JSON 解析成一个 Item 对象。接口里可以直接访问：
 
-- 教程以 **Python 3.12+、Pydantic v2、SQLAlchemy 2.x** 为基础。
-- 激活虚拟环境后统一使用 `python -m pip`、`python -m uvicorn`，避免解释器混用。
-- 第 2～5 章的完整示例默认分别保存为独立目录中的 `main.py`。不同章节的应用不要直接拼接；注明“补充”的代码才追加到本章示例。
-- 第 6 章是独立的数据库练习；第 13 章提供可直接运行的完整项目，位于 `docs/fastApi/examples/task-api/`。
-- 数据库入门使用同步 SQLAlchemy，异步数据库在第 9 章单独学习。
-- JSON 示例中的 `true`、`false`、`null` 对应 Python 的 `True`、`False`、`None`。
+```Python
+item.name      # "键盘"
+item.price     # 199.9
+item.is_offer  # True
+```
 
-旧教程中的 `model.dict()`、`orm_mode = True`、`@validator` 在新项目中分别优先使用 `model_dump()`、`ConfigDict(from_attributes=True)`、`@field_validator`。不要混用两个大版本的写法。
+2. item: Item 表示接收符合模型的请求体
 
-## 4. 四个学习阶段
+```Python
+async def create_item(item: Item):
+    return item
+```
 
-1. **内存版**：学完 1～5 章，完成任务的增删改查与参数校验。
-2. **数据库版**：学完第 6 章，完成持久化、分页和事务处理。
-3. **多用户版**：学完 7～9 章，完成注册、登录与用户数据隔离。
-4. **可交付版**：学完 10～11 章，补齐自动测试与部署配置。进阶章节按需要选学。
+FastAPI 发现参数类型是 Pydantic 模型，就会按请求体处理。你不必手动读取 JSON，再逐个判断字段是否存在、类型是否正确。
 
-每学完一章，先运行示例，再修改一个参数或故意触发一次错误，最后完成练习。能够解释错误发生在哪一层，比只看到接口返回 200 更重要。
+校验通过后执行函数；例如缺少 name，或者 price 是无法解析的 "abc"，通常会返回 422，并指出出错字段。
 
-## 5. 建议收藏的官方资料
+`return item` 会将模型序列化为 JSON 响应。这个示例只是接收并返回数据，尚未保存到数据库。
 
-- [FastAPI 中文教程](https://fastapi.tiangolo.com/zh/tutorial/)
-- [Pydantic 模型](https://docs.pydantic.dev/latest/concepts/models/)
-- [SQLAlchemy 2.0 教程](https://docs.sqlalchemy.org/en/20/tutorial/)
-- [Python 类型注解](https://docs.python.org/zh-cn/3/library/typing.html)
 
-开始学习：[01. 前置基础](./index1.md)。
+
+## 自动生成 API 文档：
+- FastAPI 内置 Swagger UI 和 ReDoc，自动生成交互式 API 文档。
+- 开发者只需编写代码，文档即自动生成，减少维护成本。
+
+## 异步支持
+- 支持 async/await 语法，适合高并发场景（如实时聊天、流处理）。
+- 比传统同步框架（如 Flask）更适合现代 Web 应用。
+
+
+## CGI/WSGI/ASGI 了解
+
+浏览器 → 服务器 ── CGI/WSGI/ASGI ──→ APP
+- CGI 是最早的通用接口，解决服务器与动态内容生成程序的通信问题，但性能低下。
+- WSGI 针对 Python 生态优化，取代 CGI，成为 Python Web 开发的主流标准，专注于同步 Web 应用。
+- ASGI 是 WSGI 的升级，适应异步编程和现代 Web 需求（如 WebSocket、HTTP/2），兼容 WSGI 应用。
+
+
+## 为什么选择 FastAPI
+
+- 开发速度快：类型提示和自动文档减少重复工作。
+- 性能优异：异步架构支持高并发，适合生产环境。
+- 社区活跃：快速增长的生态，兼容 Starlette 和 Pydantic 的扩展。
+- 易于上手：Python 开发者只需掌握基本类型提示即可快速构建 API。
