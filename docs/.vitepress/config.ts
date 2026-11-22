@@ -3,7 +3,7 @@
  * @Description: 
  * @Date: 2026-10-30 15:52:25
  * @LastEditors: along
- * @LastEditTime: 2026-11-19 10:57:17
+ * @LastEditTime: 2026-11-20 21:12:47
  * @FilePath: /DevNook/docs/.vitepress/config.ts
  */
 import { statSync } from 'node:fs'
@@ -13,6 +13,19 @@ import type { DefaultTheme, UserConfig } from 'vitepress'
 export default {
   title: '大前端笔记',
   lastUpdated: true,
+  markdown: {
+    config(md) {
+      const defaultFence = md.renderer.rules.fence!
+      md.renderer.rules.fence = (tokens, index, options, env, renderer) => {
+        const token = tokens[index]
+        if (token.info.trim().split(/\s+/)[0] === 'mermaid') {
+          // 编码后作为组件属性传递，避免图表文本被当作 HTML 或 Vue 模板解析。
+          return `<MermaidDiagram source="${encodeURIComponent(token.content)}" />\n`
+        }
+        return defaultFence(tokens, index, options, env, renderer)
+      }
+    },
+  },
   transformPageData(pageData, { siteConfig }) {
     if (pageData.frontmatter.lastUpdated !== false && !pageData.lastUpdated) {
       // 尚无 Git 提交记录的文档使用文件修改时间。
@@ -289,7 +302,10 @@ export default {
       '/project/': [
         {
           text: '前端工程化建设',
-          items: [{ text: '前端工程化建设', link: '/project/index.md' }],
+          items: [
+            { text: '前端工程化建设', link: '/project/index.md' },
+            { text: 'VitePress 宝塔部署', link: '/project/deploy-baota.md' },
+          ],
         },
       ],
       '/safety/': [
@@ -537,8 +553,9 @@ export default {
             { text: '类型提示', link: '/fastApi/index2.md' },
             { text: '启动命令', link: '/fastApi/index3.md' },
             { text: 'Pydantic数据验证', link: '/fastApi/index4.md' },
-            { text: '请求数据', link: '/fastApi/index5.md' },
-            // { text: '06. 数据库与CRUD', link: '/fastApi/index6.md' },
+            { text: '请求数据的方式', link: '/fastApi/index5.md' },
+            { text: 'APIRouter', link: '/fastApi/index6.md' },
+            { text: '数据库连接配置', link: '/fastApi/index7.md' },
             // { text: '07. 用户登录与权限', link: '/fastApi/index7.md' },
             // { text: '08. 项目结构与配置', link: '/fastApi/index8.md' },
             // { text: '09. 异步与常见集成', link: '/fastApi/index9.md' },

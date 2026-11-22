@@ -2,10 +2,14 @@ import mediumZoom, { type Zoom } from 'medium-zoom'
 import { onContentUpdated, type Theme } from 'vitepress'
 import DefaultTheme from 'vitepress/theme'
 import { defineComponent, h, onMounted, onUnmounted } from 'vue'
+import MermaidDiagram from './components/MermaidDiagram.vue'
 import './style.css'
 
 export default {
   extends: DefaultTheme,
+  enhanceApp({ app }) {
+    app.component('MermaidDiagram', MermaidDiagram)
+  },
   Layout: defineComponent({
     setup() {
       let zoom: Zoom | undefined
