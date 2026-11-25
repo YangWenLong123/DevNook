@@ -3,27 +3,56 @@
  * @Description: 
  * @Date: 2026-10-30 15:52:25
  * @LastEditors: along
- * @LastEditTime: 2026-11-20 21:12:47
+ * @LastEditTime: 2026-11-24 14:16:04
  * @FilePath: /DevNook/docs/.vitepress/config.ts
  */
-import { statSync } from 'node:fs'
+import { readdirSync, statSync } from 'node:fs'
 import { resolve } from 'node:path'
 import type { DefaultTheme, UserConfig } from 'vitepress'
+
+const reactCollator = new Intl.Collator('zh-CN', { numeric: true })
+
+// 文件夹作为分组，Markdown 文件名作为目录项，按章节编号自然排序。
+function createReactItems(
+  directory = resolve(__dirname, '../awesome_react-main'),
+  base = '/awesome_react-main',
+): DefaultTheme.SidebarItem[] {
+  return readdirSync(directory, { withFileTypes: true })
+    .sort((a, b) => reactCollator.compare(a.name, b.name))
+    .flatMap((entry): DefaultTheme.SidebarItem[] => {
+      const link = `${base}/${entry.name}`
+      if (entry.isDirectory()) {
+        const items = createReactItems(resolve(directory, entry.name), link)
+        return items.length ? [{ text: entry.name, collapsed: true, items }] : []
+      }
+      return entry.isFile() && entry.name.endsWith('.md')
+        ? [{ text: entry.name.slice(0, -3), link }]
+        : []
+    })
+}
+
+const reactSidebar: DefaultTheme.SidebarItem[] = [
+  {
+    text: 'React',
+    items: [{ text: 'React', link: '/react/index.md' }],
+  },
+  ...createReactItems(),
+]
 
 export default {
   title: '大前端笔记',
   lastUpdated: true,
   markdown: {
     config(md) {
-      const defaultFence = md.renderer.rules.fence!
+      const defaultFence = md.renderer.rules.fence!;
       md.renderer.rules.fence = (tokens, index, options, env, renderer) => {
-        const token = tokens[index]
+        const token = tokens[index];
         if (token.info.trim().split(/\s+/)[0] === 'mermaid') {
           // 编码后作为组件属性传递，避免图表文本被当作 HTML 或 Vue 模板解析。
-          return `<MermaidDiagram source="${encodeURIComponent(token.content)}" />\n`
+          return `<MermaidDiagram source="${encodeURIComponent(token.content)}" />\n`;
         }
-        return defaultFence(tokens, index, options, env, renderer)
-      }
+        return defaultFence(tokens, index, options, env, renderer);
+      };
     },
   },
   transformPageData(pageData, { siteConfig }) {
@@ -73,59 +102,11 @@ export default {
         {
           text: 'JavaScript',
           items: [
-            { text: '前端准备工作', link: '/web/js/index.md' },
-            { text: '1. 使用 localStorage 事件', link: '/web/js/index2.md' },
-            { text: '安装', link: '/web/js/index3.md' },
-            { text: '总结', link: '/web/js/index4.md' },
-            { text: '总结', link: '/web/js/index5.md' },
-            { text: '求和函数', link: '/web/js/index6.md' },
-            { text: '什么是请求头和响应头', link: '/web/js/index7.md' },
-            { text: '1. 安装所需库', link: '/web/js/index8.md' },
-            { text: '什么是笛卡尔乘积？', link: '/web/js/index9.md' },
-            {
-              text: 'ES2024：不断增强的实用性 API',
-              link: '/web/js/index10.md',
-            },
-            { text: 'index11', link: '/web/js/index11.md' },
-            { text: 'index12', link: '/web/js/index12.md' },
-            { text: 'index13', link: '/web/js/index13.md' },
-            { text: '前言', link: '/web/js/index14.md' },
-            { text: 'index15', link: '/web/js/index15.md' },
-            { text: 'index16', link: '/web/js/index16.md' },
-            { text: '图片', link: '/web/js/index17.md' },
-            { text: 'index18', link: '/web/js/index18.md' },
-            { text: 'index19', link: '/web/js/index19.md' },
-            { text: 'index20', link: '/web/js/index20.md' },
-            { text: 'index21', link: '/web/js/index21.md' },
-            { text: 'index22', link: '/web/js/index22.md' },
-            { text: 'index23', link: '/web/js/index23.md' },
-            { text: 'index24', link: '/web/js/index24.md' },
-            { text: 'index25', link: '/web/js/index25.md' },
-            { text: 'index26', link: '/web/js/index26.md' },
-            { text: 'index27', link: '/web/js/index27.md' },
-            { text: 'index28', link: '/web/js/index28.md' },
-            { text: 'index29', link: '/web/js/index29.md' },
-            { text: 'index30', link: '/web/js/index30.md' },
-            { text: 'index31', link: '/web/js/index31.md' },
-            { text: 'index32', link: '/web/js/index32.md' },
-            { text: 'index33', link: '/web/js/index33.md' },
-            { text: 'index34', link: '/web/js/index34.md' },
-            { text: 'index35', link: '/web/js/index35.md' },
-            { text: 'index36', link: '/web/js/index36.md' },
-            { text: 'index37', link: '/web/js/index37.md' },
-            { text: 'index38', link: '/web/js/index38.md' },
-            { text: 'index39', link: '/web/js/index39.md' },
-            { text: 'index40', link: '/web/js/index40.md' },
-            { text: 'index41', link: '/web/js/index41.md' },
-            { text: 'index42', link: '/web/js/index42.md' },
-            { text: 'index43', link: '/web/js/index43.md' },
-            { text: 'index44', link: '/web/js/index44.md' },
-            { text: 'index45', link: '/web/js/index45.md' },
-            { text: 'index46', link: '/web/js/index46.md' },
-            { text: 'index47', link: '/web/js/index47.md' },
-            { text: 'index48', link: '/web/js/index48.md' },
-            { text: 'index49', link: '/web/js/index49.md' },
-            { text: 'index50', link: '/web/js/index50.md' },
+            // { text: '标签页通信方案', link: '/web/js/index.md' },
+            // { text: '如何解决系统更新页面不刷新', link: '/web/js/index2.md' },
+            // { text: '笛卡尔乘积', link: '/web/js/index3.md' },
+            { text: '数据类型', link: '/web/js/index4.md' },
+            { text: '闭包', link: '/web/js/index5.md' },
           ],
         },
       ],
@@ -287,12 +268,8 @@ export default {
           ],
         },
       ],
-      '/react/': [
-        {
-          text: 'React',
-          items: [{ text: 'React', link: '/react/index.md' }],
-        },
-      ],
+      '/react/': reactSidebar,
+      '/awesome_react-main/': reactSidebar,
       '/performance/': [
         {
           text: '前端性能优化',
@@ -556,6 +533,7 @@ export default {
             { text: '请求数据的方式', link: '/fastApi/index5.md' },
             { text: 'APIRouter', link: '/fastApi/index6.md' },
             { text: '数据库连接配置', link: '/fastApi/index7.md' },
+            { text: '流式传输 JSON Lines', link: '/fastApi/index8.md' },
             // { text: '07. 用户登录与权限', link: '/fastApi/index7.md' },
             // { text: '08. 项目结构与配置', link: '/fastApi/index8.md' },
             // { text: '09. 异步与常见集成', link: '/fastApi/index9.md' },

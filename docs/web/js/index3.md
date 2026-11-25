@@ -1,74 +1,264 @@
-用户在浏览器中打开某 web 应用（通常是后台管理系统）很长时间且未刷新页面时，如果应用有新功能添加或问题修复，用户可能无法及时知道有新版发布。这样会导致用户继续使用旧版，影响用户体验和数据准确性，甚至出现程序报错。
+## 什么是笛卡尔乘积？
 
-## 安装
+笛卡尔乘积是指在 bai 数学中，两个集合 X 和 Y 的笛 du 卡尔积，又称直积，表示为 X×zhiY，第一 dao 个对象是 X 的成员而第二个对象是 Y 的所有可能有序对的其中一个成知员.
 
-```bash
-npm install version-polling --save
+![alt text](image-32.png)
+
+## 需求
+
+现在有这几个数据
+
+```js
+let names = ['iPhone X', 'iPhone XS'];
+
+let colors = ['黑色', '白色'];
+
+let storages = ['64g', '256g'];
 ```
 
-## 使用示例
+需要把它们所有的组合排列出来，最终生成这样的一组数据
 
-使用轮询，当检测到有新版本时，会触发 onUpdate 回调函数，弹出提示用户有更新，点击确定刷新页面。
-
-```javascript
-import { createVersionPolling } from 'version-polling';
-import { Modal } from 'ant-design-vue';
-
-createVersionPolling({
-  appETagKey: '__SOP_TRAINING_SYSTEM__',
-  pollingInterval: 5 * 1000,
-  silent: process.env.NODE_ENV === 'development', // 开发环境下不检测
-  onUpdate: (self) => {
-    Modal.confirm({
-      title: '提示',
-      content: '检测到有新版本发布，是否刷新页面？',
-      okText: '刷新',
-      cancelText: '取消',
-      onOk: () => {
-        location.reload();
+```js
+[
+  {
+    spec: [
+      {
+        name: 'iPhone X',
       },
-    });
-  },
-});
-```
-
-不使用轮询，仅通过前端事件触发检测
-
-```javascript
-import { createVersionPolling } from 'version-polling';
-import { Modal } from 'ant-design-vue';
-
-createVersionPolling({
-  eventTriggerList: ['popstate'],
-  silent: process.env.NODE_ENV === 'development', // 开发环境下不检测
-  silentPollingInterval: true,
-  onUpdate: (self) => {
-    Modal.confirm({
-      title: '提示',
-      content: '检测到有新版本发布，是否刷新页面？',
-      okText: '刷新',
-      cancelText: '取消',
-      onOk: () => {
-        location.reload();
+      {
+        name: '黑色',
       },
-    });
+      {
+        name: '64g',
+      },
+    ],
   },
-});
+  {
+    spec: [
+      {
+        name: 'iPhone X',
+      },
+      {
+        name: '黑色',
+      },
+      {
+        name: '256g',
+      },
+    ],
+  },
+  {
+    spec: [
+      {
+        name: 'iPhone X',
+      },
+      {
+        name: '白色',
+      },
+      {
+        name: '64g',
+      },
+    ],
+  },
+  {
+    spec: [
+      {
+        name: 'iPhone X',
+      },
+      {
+        name: '白色',
+      },
+      {
+        name: '256g',
+      },
+    ],
+  },
+  {
+    spec: [
+      {
+        name: 'iPhone XS',
+      },
+      {
+        name: '黑色',
+      },
+      {
+        name: '64g',
+      },
+    ],
+  },
+  {
+    spec: [
+      {
+        name: 'iPhone XS',
+      },
+      {
+        name: '黑色',
+      },
+      {
+        name: '256g',
+      },
+    ],
+  },
+  {
+    spec: [
+      {
+        name: 'iPhone XS',
+      },
+      {
+        name: '白色',
+      },
+      {
+        name: '64g',
+      },
+    ],
+  },
+  {
+    spec: [
+      {
+        name: 'iPhone XS',
+      },
+      {
+        name: '白色',
+      },
+      {
+        name: '256g',
+      },
+    ],
+  },
+];
 ```
 
-## API
+## 思路分解
 
-[](https://www.npmjs.com/package/version-polling#api)
+1.  1.  以上文所举的例子来说，比如我们目前的属性数组就是：names、colors、storages，首先我们会处理 names 数组，很显然对于每个属性数组，都需要去遍历它，然后一个一个选择后再去和 下一个数组的每一项进行组合。
+    1.  我们设计的递归函数接受两个参数：
 
-| 参数                  | 说明                                                     | 类型             | 默认值                                               |
-| --------------------- | -------------------------------------------------------- | ---------------- | ---------------------------------------------------- |
-| vcType                | 版本控制方式，可选值有`etag`、`chunkHash`、`versionJson` | `string`         | `etag`                                               |
-| htmlFileUrl           | `index.html`文件地址                                     | `string`         | `${location.origin}${location.pathname}`             |
-| chunkName             | chunk 名称                                               | `string`         | `index`                                              |
-| versionFileUrl        | `version.json`文件地址                                   | `string`         | `${location.origin}${location.pathname}version.json` |
-| eventTriggerList      | 触发版本检测的事件名称列表                               | `string[]`       | `-`                                                  |
-| pollingInterval       | 轮询间隔，单位为毫秒，默认为 5 分钟                      | `number`         | `5 * 60 * 1000`                                      |
-| silent                | 为`true`时，不进行版本检测                               | `boolean`        | `false`                                              |
-| silentPollingInterval | 为`true`时，不做轮询版本检测                             | `boolean`        | `false`                                              |
-| silentPageVisibility  | 为`true`时，`visibilitychange`事件不会触发版本检测       | `boolean`        | `false`                                              |
-| onUpdate              | 检测到版本更新触发的回调函数                             | `(self) => void` | `-`                                                  |
+<!---->
+
+1.  1.  1.  index 对应当前正在处理的下标，是 names 还是 colors 或是 storage。
+        1.  prev 上一次递归已经拼接成的结果，比如 ['iPhone X', '黑色']。
+
+<!---->
+
+1.  3.  进入递归函数：
+
+<!---->
+
+1.  1.  1.  处理属性数组的下标 0：假设我们在第一次循环中选择了 iPhone XS，那此时我们有一个未完成的结果状态，假设我们叫它 prev，此时 prev = ['iPhone XS']。
+        1.  处理属性数组的下标 1：那么就处理到 colors 数组的了，并且我们拥有 prev，在遍历 colors 的时候继续递归的去把 prev 拼接成 prev.concat(color)，也就是 ['iPhone XS', '黑色'] 这样继续把这个 prev 交给下一次递归。
+        1.  处理属性数组的下标 2：那么就处理到 storages 数组的了，并且我们拥有了 name + color 的 prev，在遍历 storages 的时候继续递归的去把 prev 拼接成 prev.concat(storage)，也就是 ['iPhone XS', '黑色', '64g']，并且此时我们发现处理的属性数组下标已经到达了末尾，那么就放入全局的结果变量 res 中，作为一个结果。
+
+## 实现
+
+```js
+let names = ['iPhone X', 'iPhone XS'];
+
+let colors = ['黑色', '白色'];
+
+let storages = ['64g', '256g'];
+
+let combine = function (...chunks) {
+  let res = [];
+
+  let helper = function (chunkIndex, prev) {
+    let chunk = chunks[chunkIndex];
+    let isLast = chunkIndex === chunks.length - 1;
+    for (let val of chunk) {
+      let cur = prev.concat({ name: val });
+      if (isLast) {
+        // 如果已经处理到数组的最后一项了 则把拼接的结果放入返回值中
+        res.push({ spec: cur });
+      } else {
+        helper(chunkIndex + 1, cur);
+      }
+    }
+  };
+
+  // 从属性数组下标为 0 开始处理
+  // 并且此时的 prev 是个空数组
+  helper(0, []);
+
+  return res;
+};
+
+console.log(combine(names, colors, storages));
+```
+
+## 需求
+
+在业务上，很少是这样的单数组进行组合,如果遇到复杂的数据该如何处理，下面是一组数据：
+
+```js
+let list = [
+  {
+    spec_name: '颜色',
+    values: [
+      {
+        spec_value: '红色',
+      },
+      {
+        spec_value: '黑色',
+      },
+    ],
+  },
+  {
+    spec_name: '尺码',
+    values: [
+      {
+        spec_value: 'l',
+      },
+      {
+        spec_value: 's',
+      },
+    ],
+  },
+];
+```
+
+这时候我们要将它处理为这样一组数据
+
+```js
+[
+  [
+    { spec_name: '颜色', spec_value: '红色' },
+    { spec_name: '尺码', spec_value: 'l' },
+  ],
+  [
+    { spec_name: '颜色', spec_value: '黑色' },
+    { spec_name: '尺码', spec_value: 'l' },
+  ],
+  [
+    { spec_name: '颜色', spec_value: '红色' },
+    { spec_name: '尺码', spec_value: 's' },
+  ],
+  [
+    { spec_name: '颜色', spec_value: '黑色' },
+    { spec_name: '尺码', spec_value: 's' },
+  ],
+];
+```
+
+## 实现
+
+```js
+let specs = [];
+
+for (let i in list) {
+  let tmp = [];
+
+  for (let j in list[i].values) {
+    if (specs.length <= 0) {
+      tmp.push([{ spec_name: list[i].spec_name, spec_value: list[i].values[j].spec_value }]);
+    } else {
+      for (var k in specs) {
+        tmp.push(
+          specs[k].concat({
+            spec_name: list[i].spec_name,
+            spec_value: list[i].values[j].spec_value,
+          })
+        );
+      }
+    }
+  }
+  specs = tmp;
+}
+```

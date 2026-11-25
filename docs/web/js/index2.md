@@ -1,103 +1,74 @@
-在浏览器中，两个同域的标签页（Tab）之间通信有多种实现方式，以下是常见的几种方法及其原理和代码示例：
+用户在浏览器中打开某 web 应用（通常是后台管理系统）很长时间且未刷新页面时，如果应用有新功能添加或问题修复，用户可能无法及时知道有新版发布。这样会导致用户继续使用旧版，影响用户体验和数据准确性，甚至出现程序报错。
 
-## 1. 使用 `localStorage` 事件
+## 安装
 
-当修改 `localStorage` 时，会触发 `storage` 事件，其他同源页面可以监听该事件实现通信。
-
-```javascript
-// Tab A 发送消息
-localStorage.setItem('message', JSON.stringify({ content: 'Hello Tab B!' }));
-
-// Tab B 接收消息
-window.addEventListener('storage', (e) => {
-  if (e.key === 'message') {
-    const message = JSON.parse(e.newValue);
-    console.log('Received:', message);
-  }
-});
+```bash
+npm install version-polling --save
 ```
 
-**特点**：
+## 使用示例
 
-- 只能传递字符串，需手动序列化/反序列化。
-- **当前 Tab 修改数据时不会触发自己的监听器**，只有其他 Tab 会收到事件。
-- 受同源策略限制，仅限同域页面。
-
-## 2. **BroadcastChannel API**
-
-现代浏览器提供的专用通信 API，允许同源页面通过命名频道通信。
+使用轮询，当检测到有新版本时，会触发 onUpdate 回调函数，弹出提示用户有更新，点击确定刷新页面。
 
 ```javascript
-// Tab A 发送消息
-const channel = new BroadcastChannel('my_channel');
-channel.postMessage({ content: 'Hello Tab B!' });
+import { createVersionPolling } from 'version-polling';
+import { Modal } from 'ant-design-vue';
 
-// Tab B 接收消息
-const channel = new BroadcastChannel('my_channel');
-channel.onmessage = (e) => {
-  console.log('Received:', e.data);
-};
-```
-
-**特点**：
-
-- 直接支持结构化数据（对象、数组等）。
-- 需手动关闭频道（`channel.close()`）。
-- 兼容性良好（支持 Chrome 54+、Firefox 38+、Edge 79+）。
-
-## 3. **通过 `window.postMessage`（需窗口引用）**
-
-如果两个 Tab 存在引用关系（如通过 `window.open` 打开），可直接通过 `postMessage` 通信。
-
-```javascript
-// Tab A 打开 Tab B 并发送消息
-const newTab = window.open('https://same-domain.com/tabB');
-newTab.postMessage('Hello Tab B!', 'https://same-domain.com');
-
-// Tab B 接收消息
-window.addEventListener('message', (e) => {
-  if (e.origin === 'https://same-domain.com') {
-    console.log('Received:', e.data);
-  }
-});
-```
-
-**特点**：
-
-- 需要直接引用目标窗口对象（如通过 `window.open` 或 `window.opener`）。
-- 适用于有明确父子关系的页面。
-
-## 4. **Service Worker 作为中介**
-
-通过 Service Worker 作为消息中转站，实现跨 Tab 通信。
-
-```javascript
-// Tab A 发送消息
-navigator.serviceWorker.controller.postMessage({
-  type: 'MSG_TO_OTHER_TABS',
-  data: 'Hello from Tab A!',
-});
-
-// Service Worker 代码（sw.js）
-self.addEventListener('message', (event) => {
-  if (event.data.type === 'MSG_TO_OTHER_TABS') {
-    self.clients.matchAll().then((clients) => {
-      clients.forEach((client) => {
-        if (client.id !== event.source.id) {
-          client.postMessage(event.data);
-        }
-      });
+createVersionPolling({
+  appETagKey: '__SOP_TRAINING_SYSTEM__',
+  pollingInterval: 5 * 1000,
+  silent: process.env.NODE_ENV === 'development', // 开发环境下不检测
+  onUpdate: (self) => {
+    Modal.confirm({
+      title: '提示',
+      content: '检测到有新版本发布，是否刷新页面？',
+      okText: '刷新',
+      cancelText: '取消',
+      onOk: () => {
+        location.reload();
+      },
     });
-  }
-});
-
-// Tab B 接收消息
-navigator.serviceWorker.addEventListener('message', (event) => {
-  console.log('Received:', event.data);
+  },
 });
 ```
 
-**特点**：
+不使用轮询，仅通过前端事件触发检测
 
-- 支持离线场景和复杂通信逻辑。
-- 需要注册 Service Worker（`navigator.serviceWorker.register('sw.js')`）。
+```javascript
+import { createVersionPolling } from 'version-polling';
+import { Modal } from 'ant-design-vue';
+
+createVersionPolling({
+  eventTriggerList: ['popstate'],
+  silent: process.env.NODE_ENV === 'development', // 开发环境下不检测
+  silentPollingInterval: true,
+  onUpdate: (self) => {
+    Modal.confirm({
+      title: '提示',
+      content: '检测到有新版本发布，是否刷新页面？',
+      okText: '刷新',
+      cancelText: '取消',
+      onOk: () => {
+        location.reload();
+      },
+    });
+  },
+});
+```
+
+## API
+
+[](https://www.npmjs.com/package/version-polling#api)
+
+| 参数                  | 说明                                                     | 类型             | 默认值                                               |
+| --------------------- | -------------------------------------------------------- | ---------------- | ---------------------------------------------------- |
+| vcType                | 版本控制方式，可选值有`etag`、`chunkHash`、`versionJson` | `string`         | `etag`                                               |
+| htmlFileUrl           | `index.html`文件地址                                     | `string`         | `${location.origin}${location.pathname}`             |
+| chunkName             | chunk 名称                                               | `string`         | `index`                                              |
+| versionFileUrl        | `version.json`文件地址                                   | `string`         | `${location.origin}${location.pathname}version.json` |
+| eventTriggerList      | 触发版本检测的事件名称列表                               | `string[]`       | `-`                                                  |
+| pollingInterval       | 轮询间隔，单位为毫秒，默认为 5 分钟                      | `number`         | `5 * 60 * 1000`                                      |
+| silent                | 为`true`时，不进行版本检测                               | `boolean`        | `false`                                              |
+| silentPollingInterval | 为`true`时，不做轮询版本检测                             | `boolean`        | `false`                                              |
+| silentPageVisibility  | 为`true`时，`visibilitychange`事件不会触发版本检测       | `boolean`        | `false`                                              |
+| onUpdate              | 检测到版本更新触发的回调函数                             | `(self) => void` | `-`                                                  |
